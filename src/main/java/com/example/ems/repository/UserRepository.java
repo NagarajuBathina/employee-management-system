@@ -7,9 +7,9 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import com.example.ems.entity.User;
 
 public interface UserRepository extends JpaRepository<User, Long> {
-    Optional<User> findByUsername(String name);
+    Optional<User> findByuserName(String name);
 
-    boolean existsByUsername(String username);
+    boolean existsByuserName(String userName);
 
     boolean existsByEmail(String email);
 }

@@ -6,6 +6,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.security.core.Authentication;
 
 import com.example.ems.dto.LoginRequest;
@@ -17,6 +18,7 @@ import com.example.ems.security.JwtUtil;
 import com.example.ems.service.AuthService;
 
 @Service
+// @CrossOrigin(origins = "http://localhost:8080")
 public class AuthServiceImpl implements AuthService {
     @Autowired
     private UserRepository userRepository;
@@ -29,8 +31,8 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public void regiseter(SignupRequest r) {
-        if (userRepository.existsByUsername(r.getUsername())) {
-            throw new RuntimeException("Username already taken");
+        if (userRepository.existsByuserName(r.getUserName())) {
+            throw new RuntimeException("userName already taken");
         }
 
         if (userRepository.existsByEmail(r.getEmail())) {
@@ -38,17 +40,17 @@ public class AuthServiceImpl implements AuthService {
         }
 
         User u = new User();
-        u.setUserName(r.getUsername());
+        u.setUserName(r.getUserName());
         u.setEmail(r.getEmail());
         u.setPassword(passwordEncoder.encode(r.getPassword()));
         u.setRole(Role.valueOf(r.getRole().toUpperCase()));
         userRepository.save(u);
     }
 
-     @Override
+    @Override
     public String login(LoginRequest req) {
         Authentication auth = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(req.getUsername(), req.getPassword()));
+                new UsernamePasswordAuthenticationToken(req.getUserName(), req.getPassword()));
         UserDetails ud = (UserDetails) auth.getPrincipal();
         return jwtUtil.generateToken(ud);
     }
