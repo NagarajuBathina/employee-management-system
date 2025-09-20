@@ -1,55 +1,34 @@
 package com.example.ems.security;
 
-import java.nio.charset.StandardCharsets;
 import java.util.Date;
-import org.springframework.beans.factory.annotation.Value;
+
 import org.springframework.stereotype.Component;
-import io.jsonwebtoken.*;
-import io.jsonwebtoken.security.Keys;
-import java.security.Key;
-import org.springframework.security.core.userdetails.UserDetails;
+
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
 
 @Component
 public class JwtUtil {
+    // Use a secure 256-bit key (32 characters = 256 bits)
+    private final String SECRET_KEY = "MyFirstJavaProjectEmployeeManagementSystem2024";
 
-    @Value("${jwt.secret}")
-    private String jwtSecret;
-
-    @Value("${jwt.expiration-ms}")
-    private long jwtExpirationMs;
-
-    private Key getSigningKey() {
-        return Keys.hmacShaKeyFor(jwtSecret.getBytes(StandardCharsets.UTF_8));
-    }
-
-    public String generateToken(UserDetails userDetails) {
-        Date now = new Date();
-        Date expiry = new Date(now.getTime() + jwtExpirationMs);
+    public String generateToken(String username) {
         return Jwts.builder()
-                .setSubject(userDetails.getUsername())
-                .setIssuedAt(now)
-                .setExpiration(expiry)
-                .signWith(getSigningKey(), SignatureAlgorithm.HS256)
+                .setSubject(username)
+                .setIssuedAt(new Date())
+                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60)) // 1 hour
+                .signWith(SignatureAlgorithm.HS256, SECRET_KEY)
                 .compact();
     }
 
-    public String extractuserName(String token) {
-        return Jwts.parserBuilder().setSigningKey(getSigningKey()).build()
-                .parseClaimsJws(token).getBody().getSubject();
-    }
-
-    public boolean validateToken(String token, UserDetails userDetails) {
+    public String validateToken(String token) {
         try {
-            final String userName = extractuserName(token);
-            return (userName.equals(userDetails.getUsername()) && !isTokenExpired(token));
-        } catch (JwtException | IllegalArgumentException e) {
-            return false;
+            return Jwts.parser().setSigningKey(SECRET_KEY)
+                    .parseClaimsJws(token)
+                    .getBody()
+                    .getSubject();
+        } catch (Exception e) {
+            return null;
         }
-    }
-
-    private boolean isTokenExpired(String token) {
-        Date exp = Jwts.parserBuilder().setSigningKey(getSigningKey()).build()
-                .parseClaimsJws(token).getBody().getExpiration();
-        return exp.before(new Date());
     }
 }

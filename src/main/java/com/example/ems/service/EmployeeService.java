@@ -7,7 +7,7 @@ import com.example.ems.entity.Employee;
 
 public interface EmployeeService {
 
-    Employee savEmployee(Employee e);
+    Employee savEmployee(Employee e, Long userid);
 
     Page<Employee> getAllEmployees(Pageable pageable);
 
